@@ -1,0 +1,78 @@
+nacc: 10
+plots:
+    wf[l]:
+      type: multiline
+      y_offset: 100
+      var: ['wf_l:mcp', 'wf_l:u1', 'wf_l:u2', 'wf_l:v1', 'wf_l:v2', 'wf_l:w1', 'wf_l:w2']
+
+    padded[l]:
+      type: multiline
+      y_offset: 1600
+      var: ['pdd_l:mcp', 'pdd_l:u1', 'pdd_l:u2', 'pdd_l:v1', 'pdd_l:v2', 'pdd_l:w1', 'pdd_l:w2']
+
+    n[l]_rollavg:
+      type: rollavg
+      var: 'hit_l:n'
+      window: {'w1':1000, 'w2':1000}
+
+    t[l]:
+      type: hist1d
+      arange: {'hit_l:t': [0, 10000, 1]}
+
+    x-y[l]:
+      type: hist2d
+      arange: {'hit_l:x': [-65, 65, 1], 'hit_l:y': [-65, 65, 1]}
+
+    x-t[l]:
+      type: hist2d
+      arange: {'hit_l:t': [0, 10000, 10], 'hit_l:x': [-65, 65, 1]}
+
+    y-t[l]:
+      type: hist2d
+      arange: {'hit_l:t': [0, 10000, 10], 'hit_l:y': [-65, 65, 1]}
+
+    scan_t[l]_func:
+      type: scan_hist1d_func
+      func: {args1: ['hit_l:t']}
+      func_scan: {name: dream.custom.repeat.repeat, args1: ['scan:var1', 'hit_l:n']}
+      arange_var: [0, 10000, 1]
+      decimal: 5
+                           
+    # xgmd_rollavg:
+    #   type: rollavg
+    #   var: 'bld:xgmd'
+    #   window: {'w1':1000, 'w2':1000}     
+
+    # timing_rollavg:
+    #   type: rollavg
+    #   var: 'timing:280'
+    #   window: {'w1':1000, 'w2':1000}           
+
+    # atm: 
+    #   type: singleline
+    #   var: 'atm:line'
+
+    # atmg: 
+    #   type: singleline
+    #   var: 'atm:gline'      
+
+    # atm_avg:
+    #   type: rollavg1d
+    #   var: 'atm:line'
+    #   window: 1000
+
+    # atm_sig_bkg:
+    #   type: sigbkg1d
+    #   plot_type: singleline_func 
+    #   opt_type: div
+    #   window: 1000
+    #   func_sig: {name: dream.custom.filter.atm, args1: ['atm:line', 'bld:xgmd', 'timing:280'], args2: [0.005, 1]}
+    #   func_bkg: {name: dream.custom.filter.atm, args1: ['atm:line', 'bld:xgmd', 'timing:281'], args2: [0, 1]}      
+
+    # atm_sig_bkg_g:
+    #   type: sigbkg1d
+    #   plot_type: singleline_func 
+    #   opt_type: div
+    #   window: 1000
+    #   func_sig: {name: dream.custom.filter.atm, args1: ['atm:gline', 'bld:xgmd', 'timing:280'], args2: [0.005, 1]}
+    #   func_bkg: {name: dream.custom.filter.atm, args1: ['atm:gline', 'bld:xgmd', 'timing:281'], args2: [0, 1]}      

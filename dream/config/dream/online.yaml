@@ -1,0 +1,127 @@
+nacc: 10
+plots:
+    wf[l]:
+      type: multiline
+      y_offset: 100
+      var: ['wf_l:mcp', 'wf_l:u1', 'wf_l:u2', 'wf_l:v1', 'wf_l:v2', 'wf_l:w1', 'wf_l:w2']
+
+    padded[l]:
+      type: multiline
+      y_offset: 1600
+      var: ['pdd_l:mcp', 'pdd_l:u1', 'pdd_l:u2', 'pdd_l:v1', 'pdd_l:v2', 'pdd_l:w1', 'pdd_l:w2']
+
+    n[l]_rollavg:
+      type: rollavg
+      var: 'hit_l:n'
+      window: {'w1':1000, 'w2':1000}
+
+    t[l]:
+      type: hist1d
+      arange: {'hit_l:t': [0, 10000, 1]}
+
+    x-y[l]:
+      type: hist2d
+      arange: {'hit_l:x': [-65, 65, 1], 'hit_l:y': [-65, 65, 1]}
+
+    x-t[l]:
+      type: hist2d
+      arange: {'hit_l:t': [0, 10000, 10], 'hit_l:x': [-65, 65, 1]}
+
+    y-t[l]:
+      type: hist2d
+      arange: {'hit_l:t': [0, 10000, 10], 'hit_l:y': [-65, 65, 1]}
+
+
+    wf[s]:
+      type: multiline
+      y_offset: 100
+      var: ['wf_s:mcp', 'wf_s:u1', 'wf_s:u2', 'wf_s:v1', 'wf_s:v2', 'wf_s:w1', 'wf_s:w2']
+
+    padded[s]:
+      type: multiline
+      y_offset: 1600
+      var: ['pdd_s:mcp', 'pdd_s:u1', 'pdd_s:u2', 'pdd_s:v1', 'pdd_s:v2', 'pdd_s:w1', 'pdd_s:w2']
+
+    n[s]_rollavg:
+      type: rollavg
+      var: 'hit_s:n'
+      window: {'w1':1000, 'w2':1000}
+
+    t[s]:
+      type: hist1d
+      arange: {'hit_s:t': [0, 10000, 1]}
+
+    x-y[s]:
+      type: hist2d
+      arange: {'hit_s:x': [-65, 65, 1], 'hit_s:y': [-65, 65, 1]}
+
+    x-t[s]:
+      type: hist2d
+      arange: {'hit_s:t': [0, 10000, 10], 'hit_s:x': [-65, 65, 1]}
+
+    y-t[s]:
+      type: hist2d
+      arange: {'hit_s:t': [0, 10000, 10], 'hit_s:y': [-65, 65, 1]}
+
+    # t[l]_duck_goose:
+    #     type: sigbkg1d
+    #     plot_type: hist1d_func
+    #     func_sig: {name: dream.custom.filter.duck_goose_arr, args1: ['hit_l:t', 'hit_l:n', 'timing:280'], args2:[1]}
+    #     func_bkg: {name: dream.custom.filter.duck_goose_arr, args1: ['hit_l:t', 'hit_l:n', 'timing:281'], args2:[1]}
+    #     arange_var: [0, 10000, 10]
+    #     norm_type: 'sum'
+    #     func_norm_sig: {name: dream.custom.filter.duck_goose_arr1, args1: ['bld:xgmd', 'timing:280'], args2:[1]}
+    #     func_norm_bkg: {name: dream.custom.filter.duck_goose_arr1, args1: ['bld:xgmd', 'timing:281'], args2:[1]}
+
+    # scan_t[l]_func:
+    #   type: scan_hist1d_func
+    #   func: {args1: ['hit_l:t']}
+    #   func_scan: {name: dream.custom.repeat.repeat, args1: ['scan:var1', 'hit_l:n']}
+    #   arange_var: [0, 10000, 1]
+    #   decimal: 5                  
+
+    # scan_t[l]_func:
+    #   type: scan_hist1d_func
+    #   func: {args1: ['hit_l:t']}
+    #   func_scan: {name: dream.custom.repeat.repeat, args1: ['scan:var1', 'hit_l:n']}
+    #   arange_var: [0, 10000, 1]
+    #   decimal: 5
+                           
+    # xgmd_rollavg:
+    #   type: rollavg
+    #   var: 'bld:xgmd'
+    #   window: {'w1':1000, 'w2':1000}     
+
+    # timing_rollavg:
+    #   type: rollavg
+    #   var: 'timing:280'
+    #   window: {'w1':1000, 'w2':1000}           
+
+    # atm: 
+    #   type: singleline
+    #   var: 'atm:line'
+
+    # atmg: 
+    #   type: singleline
+    #   var: 'atm:gline'      
+
+    # atm_avg:
+    #   type: rollavg1d
+    #   var: 'atm:line'
+    #   window: 1000
+
+    # atm_sig_bkg:
+    #   type: sigbkg1d
+    #   plot_type: singleline_func 
+    #   opt_type: div
+    #   window: 1000
+    #   func_sig: {name: dream.custom.filter.atm, args1: ['atm:line', 'bld:xgmd', 'timing:280'], args2: [0.005, 1]}
+    #   func_bkg: {name: dream.custom.filter.atm, args1: ['atm:line', 'bld:xgmd', 'timing:281'], args2: [0, 1]}      
+
+    # atm_sig_bkg_g:
+    #   type: sigbkg1d
+    #   plot_type: singleline_func 
+    #   opt_type: div
+    #   window: 1000
+    #   func_sig: {name: dream.custom.filter.atm, args1: ['atm:gline', 'bld:xgmd', 'timing:280'], args2: [0.005, 1]}
+    #   func_bkg: {name: dream.custom.filter.atm, args1: ['atm:gline', 'bld:xgmd', 'timing:281'], args2: [0, 1]}      

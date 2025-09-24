@@ -1,0 +1,46 @@
+pip install -e . --no-build-isolation --user
+export PATH=$PATH:/cds/home/x/xiangli/.local/bin
+mpirun -n 30  --mca btl vader,self dream
+
+mpirun -n 10  --mca btl vader,self dream
+
+other notes:
+to avoid conda env issues (user miniconda vs ps conda): first ssh to psana and then source
+this issue wouldn't occur if the session is run from nomachine nx or or TMO computer
+remember to remove dream.egg_info before reinstallation
+
+
+ 1107  python setup.py bdist_wheel
+ 1109  pip wheel . --no-deps --no-build-isolation -w dist/
+ 1110  #pip install build
+ 1111  #kill %
+ 1112  #ls
+ 1113  #ls dist
+ 1114  cd dist
+ 1115  #ls
+ 1116  pip install dream-0.1.0-py3-none-any.whl
+ 1117  #ls
+ 1118  cp *.whl /cds/home/opr/tmoopr/tmo_ana/dream/
+
+
+#deploy conda env
+ssh psana
+source /sdf/group/lcls/ds/ana/sw/conda2/manage/bin/psconda.sh  # for LCLS1 environments. replace "conda1" with "conda2" for LCLS2
+# for the following 3 commands, change "my-h5-1.0.0" to the name of your environment
+export CONDA_PKGS_DIRS=/sdf/group/lcls/ds/tools/conda_envs/dream/.pkgs # avoids storing large package files in your home directory
+export CONDA_ENVS_DIRS="/sdf/group/lcls/ds/tools/conda_envs"
+conda create -n dream python=[version] # get the python version of the active psconda environment
+chmod -R +r /sdf/group/lcls/ds/tools/conda_envs/dream # make directory world-readable
+
+
+On the old "pcds" system the installation area is /cds/sw/package/conda_envs/
+
+
+ssh psdev
+source ~tmoopr/daq/setup_env.sh  # for LCLS1 environments. replace "conda1" with "conda2" for LCLS2
+# for the following 3 commands, change "my-h5-1.0.0" to the name of your environment
+export CONDA_PKGS_DIRS=/cds/sw/package/conda_envs/dream/.pkgs # avoids storing large package files in your home directory
+export CONDA_ENVS_DIRS="/cds/sw/package/conda_envs"
+conda create -n dream python=[version] # get the python version of the active psconda environment
+chmod -R +r /cds/sw/package/conda_envs/dream # make directory world-readable
+

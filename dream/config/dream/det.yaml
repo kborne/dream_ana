@@ -1,0 +1,51 @@
+dream_long_detector:
+  module: dream.alg.dream.dld
+  alg: dld_reconstructor
+  kwargs: {det_id: l}
+  return: {wf_l:[mcp, u1, u2, v1, v2, w1, w2], 
+           pdd_l:[mcp, u1, u2, v1, v2, w1, w2],
+           tpks_l:[mcp, u1, u2, v1, v2, w1, w2], 
+           len_tpks_l:[mcp, u1, u2, v1, v2, w1, w2],
+           hit_l:[n, z, y, t, m],
+           ppc_l:[pp1, pp2],
+           tpc_l:[tp1, tp2, tp3]}
+  
+
+
+dream_short_detector:
+  module: dream.alg.dream.dld
+  alg: dld_reconstructor
+  kwargs: {det_id: s}
+  return: {wf_s:[mcp, u1, u2, v1, v2, w1, w2], 
+           pdd_s:[mcp, u1, u2, v1, v2, w1, w2],
+           tpks_s:[mcp, u1, u2, v1, v2, w1, w2], 
+           len_tpks_s:[mcp, u1, u2, v1, v2, w1, w2],
+           hit_s:[n, z, y, t, m],
+           ppc_s:[pp1, pp2],
+           tpc_s:[tp1, tp2, tp3]}
+
+
+atm:
+  module: dream.alg.common.x
+  alg: atm
+  return: {atm: [line, gline]}
+
+scan:
+  module: dream.alg.common.x
+  alg: scan
+  return: {scan:[var1, var2]}
+
+timing:
+  module: dream.alg.common.x
+  alg: timing
+  return: {timing:['280','281','282', 'dest']}     
+
+bld:
+  module: dream.alg.common.x
+  alg: bld
+  return: {bld:[gmd, xgmd]}    
+
+epics:
+  module: dream.alg.common.x
+  alg: epics
+  return: {epics:[abc]}   

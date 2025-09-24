@@ -1,0 +1,8 @@
+# project_root/pyproject.toml
+[build-system]
+requires = [
+  "setuptools>=64.0.0",
+  "wheel"
+]
+build-backend = "setuptools.build_meta"
+

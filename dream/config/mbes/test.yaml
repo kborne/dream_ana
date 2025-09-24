@@ -1,0 +1,16 @@
+    t[l]_duck_goose:
+        type: sigbkg1d
+        plot_type: hist1d_func
+        func_sig: {name: dream.custom.filter.duck_goose_arr, args1: ['hit_l:t', 'hit_l:n', 'timing:280'], args2:[1]}
+        func_bkg: {name: dream.custom.filter.duck_goose_arr, args1: ['hit_l:t', 'hit_l:n', 'timing:281'], args2:[1]}
+        arange_var: [0, 10000, 10]
+        norm_type: 'sum'
+        func_norm_sig: {name: dream.custom.filter.duck_goose_arr, args1: ['bld:xgmd', 'timing:280'], args2:[1]}
+        func_norm_bkg: {name: dream.custom.filter.duck_goose_arr, args1: ['bld:xgmd', 'timing:281'], args2:[1]}
+
+    scan_t[l]_func:
+      type: scan_hist1d_func
+      func: {args1: ['hit_l:t']}
+      func_scan: {name: dream.custom.repeat.repeat, args1: ['scan:var1', 'hit_l:n']}
+      arange_var: [0, 10000, 1]
+      decimal: 5        
