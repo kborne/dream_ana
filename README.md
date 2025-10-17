@@ -18,4 +18,13 @@ Online and offline analysis software for the DREAM instrument at the LCLS.
 <img width="952" height="425" alt="image" src="https://github.com/user-attachments/assets/85ce42e1-1d09-41cc-a26d-b68ab652f68a" />
 <br><br>
 
+## Online plots
+<img width="3781" height="2070" alt="image" src="https://github.com/user-attachments/assets/31192a35-4d8f-4260-8d5e-6b4b32d594c3" />
+
+## Offline plots
+<img width="4167" height="2083" alt="Ar_short" src="https://github.com/user-attachments/assets/10729f50-4fbc-4f88-b48b-22ac65eee214" />
+<br><br>
+<img width="4167" height="2083" alt="Ar_long" src="https://github.com/user-attachments/assets/7c1061e8-2158-4f7e-a0fc-76623cad62f1" />
+
+
 
