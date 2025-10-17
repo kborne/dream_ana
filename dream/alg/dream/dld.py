@@ -60,22 +60,38 @@ class dld_reconstructor:
 
         ###
         self.k0 = 'hit_'+self.det_id
-        self.avail_vars = ['n', 'z', 'y', 't', 'm']
+        self.k_diag = 'diag_'+self.det_id
+        self.avail_vars_k0 = ['n', 'z', 'y', 't', 'm']
+        self.avail_vars_k_diag = ['pos_u', 'tsum_u', 'pos_v', 'tsum_v', 'pos_w', 'tsum_w']
 
-        self.reconstruction = False
+        self.reconstruction_k0 = False
         if self.k0 in requested_vars.keys():
-            if len(lists_intersection(self.avail_vars, requested_vars[self.k0])) > 0:
-                self.reconstruction = True
+            if len(lists_intersection(self.avail_vars_k0, requested_vars[self.k0])) > 0:
+                self.reconstruction_k0 = True
 
-        if self.reconstruction:
-            self.requested = {}
-            for a_var in self.avail_vars:
+        
+        self.requested = {}
+        if self.reconstruction_k0:       
+            for a_var in self.avail_vars_k0:
                 if a_var in requested_vars[self.k0]:
                     self.requested[a_var] = True
                 else:
-                    self.requested[a_var] = False
-                    
+                    self.requested[a_var] = False        
 
+        self.reconstruction_k_diag = False
+        if self.k_diag in requested_vars.keys():
+            if len(lists_intersection(self.avail_vars_k_diag, requested_vars[self.k_diag])) > 0:
+                self.reconstruction_k_diag = True       
+                self.pos_sum_index = {'pos_u': 0, 'tsum_u': 1, 'pos_v': 2, 'tsum_v': 3, 'pos_w': 4, 'tsum_w': 5}
+
+        self.reconstruction = (self.reconstruction_k0 or self.reconstruction_k_diag)
+        # if self.reconstruction_k_diag:
+        #     for a_var in self.avail_vars_k_diag:
+        #         if a_var in requested_vars[self.k0]:
+        #             self.requested[a_var] = True
+        #         else:
+        #             self.requested[a_var] = False
+                    
         ###
         self.k_pp = 'ppc_'+self.det_id
         #self.avail_vars_pp = ['pp1', 'pp2']
@@ -141,23 +157,51 @@ class dld_reconstructor:
                     if self.tripico:
                         self.data_dict[self.k_tp] = {}
                         for var in ['tp1', 'tp2', 'tp3']:
-                            self.data_dict[self.k_tp][var] = np.array([])                      
+                            self.data_dict[self.k_tp][var] = np.array([])         
+
+                    if self.reconstruction_k_diag:
+                        self.data_dict[self.k_diag] = {}
+                        for k_pos_sum in self.pos_sum_index.keys():
+                            self.data_dict[self.k_diag][k_pos_sum] = np.array([np.nan])                    
                             
                     return
+
+                #print('marker 1')
                     
                 self.RHF.pre_sort()  
-             
-                self.RHF.sort()
 
-                self.RHF.fill_hits()
-                self.data_dict[self.k0] = {}
-                hits_n = self.RHF.get_hits_n()
-                
-                if self.requested['n']: self.data_dict[self.k0]['n'] = np.array([hits_n])
-                if self.requested['z']: self.data_dict[self.k0]['z'] = self.sign_z*self.RHF.get_hits_y()
-                if self.requested['y']: self.data_dict[self.k0]['y'] = self.RHF.get_hits_x()
-                if self.requested['t']: self.data_dict[self.k0]['t'] = self.RHF.get_hits_t()
-                if self.requested['m']: self.data_dict[self.k0]['m'] = self.RHF.get_hits_method()
+                if self.reconstruction_k_diag:
+                    self.data_dict[self.k_diag] = {}
+                    pt_ready = self.RHF.pos_tsum_ready()
+                    #print('marker 2')
+                    if pt_ready:
+                        pos_tsum = self.RHF.get_pos_tsum()
+                        #print('marker 3')
+                        for k_pos_sum in self.pos_sum_index.keys():
+                            self.data_dict[self.k_diag][k_pos_sum] = np.array([pos_tsum[self.pos_sum_index[k_pos_sum]]])
+                    else:
+                        for k_pos_sum in self.pos_sum_index.keys():
+                            self.data_dict[self.k_diag][k_pos_sum] = np.array([np.nan])                     
+                        
+
+                if self.reconstruction_k0:
+                    self.data_dict[self.k0] = {}
+                    self.RHF.sort()
+                    #print('marker 4')
+    
+                    self.RHF.fill_hits()
+                    #print('marker 5')
+                    
+                    hits_n = self.RHF.get_hits_n()
+                    #print('marker 6')
+                    if self.requested['n']: self.data_dict[self.k0]['n'] = np.array([hits_n])
+                    if self.requested['z']: self.data_dict[self.k0]['z'] = self.sign_z*self.RHF.get_hits_y()
+                    if self.requested['y']: self.data_dict[self.k0]['y'] = self.RHF.get_hits_x()
+                    if self.requested['t']: self.data_dict[self.k0]['t'] = self.RHF.get_hits_t()
+                    if self.requested['m']: self.data_dict[self.k0]['m'] = self.RHF.get_hits_method()
+
+
+                    
                     
                 if self.pipico:
                     self.data_dict[self.k_pp] = {}
@@ -192,10 +236,11 @@ class dld_reconstructor:
 
             
             else:
-                self.data_dict[self.k0] = {}
-                if self.requested['n']: self.data_dict[self.k0]['n'] = np.array([0])
-                for var in ['z', 'y', 't', 'm']:
-                    if self.requested[var]: self.data_dict[self.k0][var] = np.array([])  
+                if self.reconstruction_k0:
+                    self.data_dict[self.k0] = {}
+                    if self.requested['n']: self.data_dict[self.k0]['n'] = np.array([0])
+                    for var in ['z', 'y', 't', 'm']:
+                        if self.requested[var]: self.data_dict[self.k0][var] = np.array([])  
 
                 if self.pipico:
                     self.data_dict[self.k_pp] = {}
@@ -206,6 +251,12 @@ class dld_reconstructor:
                     self.data_dict[self.k_tp] = {}
                     for var in ['tp1', 'tp2', 'tp3']:
                         self.data_dict[self.k_tp][var] = np.array([])    
+
+
+                if self.reconstruction_k_diag:
+                    self.data_dict[self.k_diag] = {}
+                    for k_pos_sum in self.pos_sum_index.keys():
+                        self.data_dict[self.k_diag][k_pos_sum] = np.array([np.nan])
      
 
                     

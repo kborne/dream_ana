@@ -89,7 +89,7 @@ while 1:
         for step_i, step in enumerate(run.steps()):
             for nevt,evt in enumerate(step.events()):
                 
-                try:
+                if True: #try:
                     evt_dict = {}     
                     deep_merge(evt_dict, {'x':{'time_stamp': evt.timestamp}})
                     for det in detectors:
@@ -98,8 +98,8 @@ while 1:
                     comm.send(rank, smd, n_evt, evt, evt_dict)
                     n_evt += 1
                 
-                except Exception as err:
-                   print(err)
+                # except Exception as err:
+                #    print(err)
             
         if mode == 'online': 
             #pass

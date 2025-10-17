@@ -19,26 +19,30 @@ data:
   #   hit_l:
   #     len: 10
   #     fvar: [n]
-  #     var: [z, y, t, m]
+  #     var: [x, y, t, m]
 
-        #ragged_split:
-        #tpks_l:
-        #var: [mcp,u1,u2,v1,v2,w1,w2]  
+  ragged_split:
+    tpks_l:
+          #var: [mcp,u1,u2,v1,v2,w1,w2]  
+      var: [mcp]
         #tpks_s:
         #var: [mcp,u1,u2,v1,v2,w1,w2]
 
 
   ragged:
     # hit_s:
-    #   var: [z, y, t]
+    #   var: [x, y, t]
     hit_l:
-      var: [z, y, t, m]      
+      var: [z, y, t, m] 
+      
+    diag_l:
+      var: [pos_u, tsum_u, pos_v, tsum_v, pos_w, tsum_w]  
+
 
   x:
     scan: [var1, var2]
     bld: [gmd, xgmd]
+    timing: ['280','281','282','dest']
+    atm: [edge] 
     epics: [las_ip2_atm_dly]
-  #   timing: ['280','281','282','dest']
-  #   atm: [edge]
-    
 
