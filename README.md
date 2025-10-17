@@ -6,12 +6,14 @@ Main features
 - Analysis configurable with human-readable files 
 - Plots-driven analysis for online, and h5-content-driven for offline
 
-Structure
-<img width="1846" height="718" alt="image" src="https://github.com/user-attachments/assets/fda23b2a-f482-47cc-b510-ca72208eefd7" />
+## Data pipeline <br><br>
+<img width="929" height="292" alt="image" src="https://github.com/user-attachments/assets/da3ac2ba-1cd2-4e4e-bf13-9d998f95c03c" />
+<br><br>
+## Software structure <br><br>
+<img width="1014" height="387" alt="image" src="https://github.com/user-attachments/assets/23cbb410-aefb-4632-88fc-3ee7c367596f" />
+<br><br>
+## Workflow <br><br>
+<img width="952" height="425" alt="image" src="https://github.com/user-attachments/assets/85ce42e1-1d09-41cc-a26d-b68ab652f68a" />
+<br><br>
 
-Workflow
-<img width="1753" height="780" alt="image" src="https://github.com/user-attachments/assets/5da49f1e-44d8-4fbc-85a2-787fa4fa3ff0" />
-
-Data pipeline
-<img width="1679" height="517" alt="image" src="https://github.com/user-attachments/assets/bf6b19ec-165a-4ea6-b154-45c59a689ac6" />
 
