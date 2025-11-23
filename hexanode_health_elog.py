@@ -335,7 +335,7 @@ for i,n in enumerate(['u','v','w']):
     # plt.subplot(2,2,i+1)
     cnts = np.histogram(np.array(det_ts[n]),ts_edges)[0]
     
-    plt.plot(ts_bins-ts_bins[np.argmax(cnts)],
+    plt.plot(ts_bins-0*ts_bins[np.argmax(cnts)],
              cnts,
              label = n);
     plt.xlim([-25,25])
