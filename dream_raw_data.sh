@@ -13,7 +13,7 @@ sbatch --output="${ABS_PATH}/scratch/additional_metrics/logs/${RUN_NUM}_hexanode
        --partition=milano \
 	   --nodes=1 \
 	   --mem=0 \
-       --wrap="python hexanode_health_elog.py -r \"$RUN_NUM\" -e \"$EXPERIMENT\""
+       --wrap="python ${ABS_PATH}/results/dream_diag/hexanode_health_elog.py -r \"$RUN_NUM\" -e \"$EXPERIMENT\""
 
 
 echo "Job submitted for run ${RUN_NUM}. Check logs for progress."
