@@ -7,7 +7,7 @@ ABS_PATH="/sdf/data/lcls/ds/tmo/${EXPERIMENT}"
 echo "Starting offline pre-processing for run ${RUN_NUM} in experiment ${EXPERIMENT}..."
 
 
-sbatch --output="${ABS_PATH}/scratch/additional_metrics/logs/${RUN_NUM}__%j.log" \
+sbatch --output="${ABS_PATH}/scratch/additional_metrics/logs/${RUN_NUM}_hexanode_hf_%j.log" \
        --account=lcls:$EXPERIMENT \
        --reservation=lcls:earlyscience \
        --partition=milano \
