@@ -55,14 +55,14 @@ CFD = PyCFD(CFD_params)
 
 ARGS = parser.parse_args()
 
-run = ARGS.run
-exp= ARGS.experiment
+RUN_NUM = ARGS.run
+EXPERIMENT= ARGS.experiment
 
-print('experiment: ',exp)
-print('run: ', run)
+print('experiment: ',EXPERIMENT)
+print('run: ', RUN_NUM)
 
 max_events = 10_000
-ds = ps.DataSource(exp=exp, run=run,max_events=max_events)
+ds = ps.DataSource(exp=EXPERIMENT, run=RUN_NUM,max_events=max_events)
 myrun = next(ds.runs())
 
 det_name = {'u':1,'v':1,'w':1,'mcp':0}
@@ -109,9 +109,10 @@ for name,chans in det_name.items():
         det_datas[name][c] = np.delete(det_datas[name][c],nan_indx,axis=0)
 
 
+tabs = pn.Tabs([])
 
 
-p1 = plt.figure()
+p_fex_max = plt.figure()
 for n,cn in det_name.items():
     for c in range(cn+1):
         plt.hist(800/4096*np.max(det_datas[n][c][:,10_000:],axis=1),
@@ -121,12 +122,10 @@ for n,cn in det_name.items():
 plt.xlabel('FEX maximum / mV')
 plt.legend()
 plt.yscale('log')
-plt.title(f'run {run } \n FEX-maximum')
+plt.title(f'run {RUN_NUM } \n FEX-maximum')
 
 
-tabs = pn.Tabs(p1)
-prepareHtmlReport(tabs,exp,run,f"FEX-maximum/{run}")
-
+tabs.append(('FEX max',p_fex_max))
 
 
 
@@ -157,31 +156,31 @@ def peak_properties(spec_i,times):
 
 time_axis = np.arange(fex_len)*10_000/59400
 
-for n,cn in det_name.items():
+# for n,cn in det_name.items():
 
-    for c in range(cn+1):
-        p1 = plt.figure()
+#     for c in range(cn+1):
+#         p1 = plt.figure()
         
-        for i in range(4):
+#         for i in range(4):
             
-            plt.subplot(2,2,i+1)
+#             plt.subplot(2,2,i+1)
             
-            spec_i = det_datas[n][c][i]
-            # pts_t = CFD.CFD(spec_i,time_axis)
-            pts_t,phs,rts = peak_properties(spec_i,time_axis)
-            pks = [np.searchsorted(time_axis,q) for q in pts_t]
-            len(pks)
-            plt.plot(time_axis,spec_i*800/4096)
+#             spec_i = det_datas[n][c][i]
+#             # pts_t = CFD.CFD(spec_i,time_axis)
+#             pts_t,phs,rts = peak_properties(spec_i,time_axis)
+#             pks = [np.searchsorted(time_axis,q) for q in pts_t]
+#             len(pks)
+#             plt.plot(time_axis,spec_i*800/4096)
             
-            if len(pks)>0:
-                plt.plot(time_axis[pks],spec_i[pks]*800/4096,'v')
+#             if len(pks)>0:
+#                 plt.plot(time_axis[pks],spec_i[pks]*800/4096,'v')
 
-            # plt.xlim([(pks[0]-500)*0.000168,(pks[0]+500)*0.000168])
-            # plt.ylim([-100*800/4096,1000*800/4096])
-        plt.suptitle(f'run {run} \n {n}:{c}')
-        plt.tight_layout()
-        tabs = pn.Tabs(p1)
-        prepareHtmlReport(tabs,exp,run,f"/Hit-found sample/ Hit-found {n} ~ {c}/{run}")
+#             # plt.xlim([(pks[0]-500)*0.000168,(pks[0]+500)*0.000168])
+#             # plt.ylim([-100*800/4096,1000*800/4096])
+#         plt.suptitle(f'run {run} \n {n}:{c}')
+#         plt.tight_layout()
+#         tabs = pn.Tabs(p1)
+#         prepareHtmlReport(tabs,exp,run,f"/Hit-found sample/ Hit-found {n} ~ {c}/{run}")
 
 
 det_hf = {n : {i: np.nan*np.ones((np.shape(det_datas[n][c])[0],50)) for i in range(c+1)} for n,c in det_name.items()}
@@ -204,23 +203,22 @@ for n,cn in det_name.items():
 
 
 
-p1 = plt.figure()
+p_hits_per_shot = plt.figure()
 for n,cn in det_name.items():
     for c in range(cn+1):
         plt.hist(np.sum(~np.isnan(det_hf[n][c]),axis=1),np.arange(0,50),
                  histtype ='step',label = f'{n}:{c}');
 plt.xlabel('Hits / shot')
 plt.legend()
-plt.suptitle(f'Run {run} \n Hits-per-shot')
+plt.suptitle(f'Run {RUN_NUM} \n Hits-per-shot')
 
 
 
-tabs = pn.Tabs(p1)
-
-prepareHtmlReport(tabs,exp,run,f"/Hits-per-shot/{run}")
+tabs.append(('hits-per-shot',p_hits_per_shot))
 
 
-p1 = plt.figure()
+
+p_timing = plt.figure()
 for n,cn in det_name.items():
     for c in range(cn+1):
         plt.hist((np.ndarray.flatten(det_hf[n][c])),
@@ -229,13 +227,11 @@ for n,cn in det_name.items():
 plt.xlabel('Timing / ns')
 plt.legend()
 plt.yscale('log')
-plt.title(f'run {run} \n Timing spectra')
-tabs = pn.Tabs(p1)
-
-prepareHtmlReport(tabs,exp,run,f"/Timing  /{run}")
+plt.title(f'run {RUN_NUM} \n Timing spectra')
+tabs.append(('timing',p_timing))
 
 
-p1 = plt.figure()
+p_dtiming = plt.figure()
 for n,cn in det_name.items():
     for c in range(cn+1):
         plt.hist((np.ndarray.flatten(np.diff(det_hf[n][c],axis=1))),
@@ -244,11 +240,10 @@ for n,cn in det_name.items():
 plt.xlabel('delta Timing / ns')
 plt.legend()
 plt.yscale('log')
-plt.title(f'run {run} \n delta Timing')
-tabs = pn.Tabs(p1)
-prepareHtmlReport(tabs,exp,run,f"/delta Timing  /{run}")
+plt.title(f'run {RUN_NUM} \n delta Timing')
+tabs.append(('delta-timing',p_dtiming))
 
-p1 = plt.figure()
+d_rise_times = plt.figure()
 for n,cn in det_name.items():
     for c in range(cn+1):
         plt.hist((np.ndarray.flatten(det_rt[n][c])),
@@ -256,13 +251,11 @@ for n,cn in det_name.items():
                  histtype ='step',label = f'{n}:{c}');
 plt.xlabel('Rise time / ns')
 plt.legend()
-plt.title(f'run {run} \n Rise times')
-tabs = pn.Tabs(p1)
-prepareHtmlReport(tabs,exp,run,f"/delta Timing  /{run}")
+plt.title(f'run {RUN_NUM} \n Rise times')
+tabs.append(('rise-times',d_rise_times))
 
 
-
-p1 = plt.figure()
+p_height = plt.figure()
 for n,cn in det_name.items():
     for c in range(cn+1):
         plt.hist(800/4095*(np.ndarray.flatten(det_ph[n][c])),
@@ -271,11 +264,10 @@ for n,cn in det_name.items():
 plt.xlabel('Peak height / mV')
 plt.legend()
 # plt.yscale('log')
-plt.title(f'run {run} \n Peak Height')
-tabs = pn.Tabs(p1)
-prepareHtmlReport(tabs,exp,run,f"/Peak Height  /{run}")
+plt.title(f'run {RUN_NUM} \n Peak Height')
+tabs.append(('Peak Height',p_height))
 
-p1 = plt.figure()
+p_hits_per_shot_corr = plt.figure()
 for i,n in enumerate(['u','v','w']):
     plt.subplot(2,2,i+1)
     plt.hist2d(np.sum(~np.isnan(det_hf[n][0]),axis=1),
@@ -288,10 +280,9 @@ for i,n in enumerate(['u','v','w']):
     plt.xlabel('0')
     plt.ylabel('1')
     plt.colorbar()
-plt.suptitle(f'Run {run} \n Hits-per-shot correlation')
+plt.suptitle(f'Run {RUN_NUM} \n Hits-per-shot correlation')
 plt.tight_layout()
-tabs = pn.Tabs(p1)
-prepareHtmlReport(tabs,exp,run,f"/Hits-per-shot correlation  /{run}")
+tabs.append(('hits-per-shot correlation',p_hits_per_shot_corr))
 
 
 v_ts = []
@@ -326,7 +317,7 @@ for n in ['u','v','w']:
                     det_td[n].append(q1_i-q2_i)
     
 
-p1 = plt.figure()
+p_time_sums = plt.figure()
 
 ts_edges = np.arange(-100,100,0.25)
 ts_bins = 0.5*(ts_edges[:-1]+ts_edges[1:])
@@ -342,13 +333,11 @@ for i,n in enumerate(['u','v','w']):
     plt.xlabel('Time Sums / ns')
     plt.legend()
 
-plt.suptitle(f'Run {run} \n time sums')
-tabs = pn.Tabs(p1)
-
-prepareHtmlReport(tabs,exp,run,f"/Time sums  /{run}")
+plt.suptitle(f'Run {RUN_NUM} \n time sums')
+tabs.append(('time-sums',p_time_sums))
 
 
-p1 = plt.figure()
+p_time_diff = plt.figure()
 for n in ['u','v','w']:
     plt.hist(0.168*np.array(det_td[n]),
              np.arange(-250,250,1),
@@ -356,13 +345,12 @@ for n in ['u','v','w']:
 plt.xlabel('Time Differences / ns')
 plt.legend()
 
-plt.suptitle(f'Run {run} \n time differences')
-tabs = pn.Tabs(p1)
-prepareHtmlReport(tabs,exp,run,f"/Time differences  /{run}")
+plt.suptitle(f'Run {RUN_NUM} \n time differences')
+tabs.append(('time-differences',p_time_diff))
 
 
 
-p1 = plt.figure()    
+p_time_sum_vs_diff = plt.figure()    
 for i,n in enumerate(['u','v','w']):
     
     det_tdn = np.array(det_td[n])
@@ -382,7 +370,11 @@ for i,n in enumerate(['u','v','w']):
     plt.colorbar()
     plt.xlabel('Time Difference / ns')
     plt.ylabel('Time Sum / ns')
-    tabs = pn.Tabs(p1)
-plt.suptitle(f'Run {run} \n Time differences vs time sums')
+plt.suptitle(f'Run {RUN_NUM} \n Time differences vs time sums')
 plt.tight_layout()
-prepareHtmlReport(tabs,exp,run,f"/Time differences vs time sums  /{run}")
+
+tabs.append(('time-sums-vs-diff',p_time_sum_vs_diff))
+
+pageTitleFormat = f"hexanode_summary/RUN{RUN_NUM:04d}_hexanode_summary"
+
+prepareHtmlReport(tabs, EXPERIMENT, RUN_NUM, pageTitleFormat)
