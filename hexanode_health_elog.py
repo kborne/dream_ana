@@ -2,8 +2,9 @@
 # coding: utf-8
 
 #/sdf/group/lcls/ds/tools/conda_envs/dream/config/dream/alg.yaml
-import sys
 import argparse
+import sys
+import yaml
 
 
 import psana as ps
@@ -27,30 +28,16 @@ parser = argparse.ArgumentParser(description='Preprocessing Tabulation Applicati
 parser.add_argument('-r', '--run', type=int, required=True, help='Run number')
 parser.add_argument('-e', '--experiment', type=str,  required=True,help='experiment name e.g., tmo101247125')
 
-# CFD_params = {'sample_interval': 0.16826923,
-#               'polarity' : "Negative"
-#               'delay' : 4,
-#               'fraction': 1,
-#               'threshold': 500,
-#               'walk': 0,
-#               'timerange_low': 600,
-#               'timerange_high': 15_000.0,
-#               'offset': 16384}
-
-CFD_params = {'sample_interval': 0.16826923,
-              'polarity' : "Positive",
-              'delay' : 4,
-              'fraction': 1,
-              'threshold': 500/16,
-              'walk': 0,
-              'timerange_low': 600,
-              'timerange_high': 15_000.0,
-              'offset': 0}
+algorithm_file = '/sdf/group/lcls/ds/tools/conda_envs/dream/config/dream/alg.yaml'
 
 
-CFD = PyCFD(CFD_params)
+with open(algorithm_file,'r') as f:
+    det_configs = yaml.safe_load(f)
+    mcp_cfd_configs = det_configs['l']['det']['mcp']
+    dld_cfd_configs = det_configs['l']['det']['dld']
 
-
+CFD_mcp = PyCFD(mcp_cfd_configs)
+CFD_dld = PyCFD(dld_cfd_configs)
 
 
 ARGS = parser.parse_args()
@@ -65,6 +52,8 @@ max_events = 10_000
 ds = ps.DataSource(exp=EXPERIMENT, run=RUN_NUM,max_events=max_events)
 myrun = next(ds.runs())
 
+print('data source made')
+
 det_name = {'u':1,'v':1,'w':1,'mcp':0}
 
 fex_len = int(myrun.Detector('dream_hsd_lmcp').raw._seg_configs()[0].config.user.fex.gate_ns*(59_400/10)*(1/1000)+20)
@@ -73,12 +62,20 @@ fex_len = int(myrun.Detector('dream_hsd_lmcp').raw._seg_configs()[0].config.user
 det_methods = {n : myrun.Detector('dream_hsd_l'+n) for n in det_name.keys()}
 det_datas = {n : {i: np.nan*np.ones((max_events,fex_len)) for i in range(c+1)} for n,c in det_name.items()}
 
+print(det_methods.items())
+
 
 baselines = {n : 
              {i: float(myrun.Detector('dream_hsd_l'+n).raw._seg_configs()[c].config.user.fex.corr.baseline) 
               for i in range(c+1)} 
              for n,c in det_name.items()}
 
+print(baselines.items())
+
+cfd_methods = {n : 
+             {i: CFD_mcp if n=='mcp' else CFD_dld 
+              for i in range(c+1)} 
+             for n,c in det_name.items()}
 
 
 for nevt,evt in enumerate(myrun.events()):
@@ -97,7 +94,7 @@ for nevt,evt in enumerate(myrun.events()):
             for c in range(chans+1):
                 # print('\t \t',c)
     
-                det_datas[name][c][nevt] = -(x_n[c][0]-baselines[name][c])/16
+                det_datas[name][c][nevt] = x_n[c][0]
                 # det_datas[name][c][nevt] = x_n[c][0]
 
 print('deleting nan')
@@ -108,79 +105,22 @@ for name,chans in det_name.items():
         nan_indx= np.where(np.isnan(det_datas[name][c][:,0]))[0]
         det_datas[name][c] = np.delete(det_datas[name][c],nan_indx,axis=0)
 
-
 tabs = pn.Tabs([])
 
 
-p_fex_max = plt.figure()
-for n,cn in det_name.items():
-    for c in range(cn+1):
-        plt.hist(800/4096*np.max(det_datas[n][c][:,10_000:],axis=1),
-                 np.arange(0,800,2),
-                 histtype ='step',
-                 label = f'{n}:{c}');
-plt.xlabel('FEX maximum / mV')
-plt.legend()
-plt.yscale('log')
-plt.title(f'run {RUN_NUM } \n FEX-maximum')
 
-
-tabs.append(('FEX max',p_fex_max))
-
-
-
-def peak_properties(spec_i,times):
+def peak_properties(spec_i,times,cfd_method):
     # pks,_ = find_peaks(spec_i,**hf_configs)
-    pts_t = CFD.CFD(spec_i,times)
+    pts_t = cfd_method(spec_i,times)
     pks = [np.searchsorted(times,q) for q in pts_t]
 
     # pks,_ = find_peaks(spec_i,**hf_configs)
     phs = spec_i[pks]
-    pks_90 = np.zeros(len(pks),dtype=int)
-    pks_10 = np.zeros(len(pks),dtype=int)
-    for p,pk in enumerate(pks):
-        val = spec_i[pk]
-        i = 0
-        while val>0.9*spec_i[pk]:
-            val = spec_i[pk-i]
-            i+=1
-        pks_90[p]=pk-i
-        i = 0
-        while val>0.1*spec_i[pk]:
-            val = spec_i[pk-i]
-            i+=1
-        pks_10[p]=pk-i
-    rts = pks_90-pks_10
-    return pts_t,phs,rts
+    return pts_t,phs
 
 
 time_axis = np.arange(fex_len)*10_000/59400
 
-# for n,cn in det_name.items():
-
-#     for c in range(cn+1):
-#         p1 = plt.figure()
-        
-#         for i in range(4):
-            
-#             plt.subplot(2,2,i+1)
-            
-#             spec_i = det_datas[n][c][i]
-#             # pts_t = CFD.CFD(spec_i,time_axis)
-#             pts_t,phs,rts = peak_properties(spec_i,time_axis)
-#             pks = [np.searchsorted(time_axis,q) for q in pts_t]
-#             len(pks)
-#             plt.plot(time_axis,spec_i*800/4096)
-            
-#             if len(pks)>0:
-#                 plt.plot(time_axis[pks],spec_i[pks]*800/4096,'v')
-
-#             # plt.xlim([(pks[0]-500)*0.000168,(pks[0]+500)*0.000168])
-#             # plt.ylim([-100*800/4096,1000*800/4096])
-#         plt.suptitle(f'run {run} \n {n}:{c}')
-#         plt.tight_layout()
-#         tabs = pn.Tabs(p1)
-#         prepareHtmlReport(tabs,exp,run,f"/Hit-found sample/ Hit-found {n} ~ {c}/{run}")
 
 
 det_hf = {n : {i: np.nan*np.ones((np.shape(det_datas[n][c])[0],50)) for i in range(c+1)} for n,c in det_name.items()}
@@ -193,11 +133,12 @@ for n,cn in det_name.items():
         print('\t'+str(c))
         for i,spec_i in enumerate(det_datas[n][c]):
             
-            hf,ph,rt= peak_properties(spec_i,time_axis)
+            # hf,ph,rt= peak_properties(spec_i,time_axis,cfd_methods[n][c].CFD)
+            hf,ph= peak_properties(spec_i,time_axis,cfd_methods[n][c].CFD)
             if len(hf)<50:
                 det_hf[n][c][i,0:len(hf)]=hf
                 det_ph[n][c][i,0:len(hf)]=ph
-                det_rt[n][c][i,0:len(hf)]=rt
+                # det_rt[n][c][i,0:len(hf)]=rt
             else:
                 print('\t \t too many hits')
 
@@ -207,7 +148,8 @@ p_hits_per_shot = plt.figure()
 for n,cn in det_name.items():
     for c in range(cn+1):
         plt.hist(np.sum(~np.isnan(det_hf[n][c]),axis=1),np.arange(0,50),
-                 histtype ='step',label = f'{n}:{c}');
+                 histtype ='step',label = f'{n}:{c}',
+                linewidth=2.5,alpha=0.5);
 plt.xlabel('Hits / shot')
 plt.legend()
 plt.suptitle(f'Run {RUN_NUM} \n Hits-per-shot')
@@ -218,12 +160,14 @@ tabs.append(('hits-per-shot',p_hits_per_shot))
 
 
 
+
 p_timing = plt.figure()
 for n,cn in det_name.items():
     for c in range(cn+1):
         plt.hist((np.ndarray.flatten(det_hf[n][c])),
-                 bins = np.arange(0,20_000,1),
-                 histtype ='step',label = f'{n}:{c}');
+                 bins = np.arange(0,20_000,50),
+                 histtype ='step',label = f'{n}:{c}',
+                linewidth=2.0,alpha=0.5);
 plt.xlabel('Timing / ns')
 plt.legend()
 plt.yscale('log')
@@ -231,41 +175,21 @@ plt.title(f'run {RUN_NUM} \n Timing spectra')
 tabs.append(('timing',p_timing))
 
 
-p_dtiming = plt.figure()
-for n,cn in det_name.items():
-    for c in range(cn+1):
-        plt.hist((np.ndarray.flatten(np.diff(det_hf[n][c],axis=1))),
-                 bins = np.arange(0,10_000,10),
-                 histtype ='step',label = f'{n}:{c}');
-plt.xlabel('delta Timing / ns')
-plt.legend()
-plt.yscale('log')
-plt.title(f'run {RUN_NUM} \n delta Timing')
-tabs.append(('delta-timing',p_dtiming))
-
-d_rise_times = plt.figure()
-for n,cn in det_name.items():
-    for c in range(cn+1):
-        plt.hist((np.ndarray.flatten(det_rt[n][c])),
-                 np.arange(0,200,1),
-                 histtype ='step',label = f'{n}:{c}');
-plt.xlabel('Rise time / ns')
-plt.legend()
-plt.title(f'run {RUN_NUM} \n Rise times')
-tabs.append(('rise-times',d_rise_times))
-
 
 p_height = plt.figure()
 for n,cn in det_name.items():
     for c in range(cn+1):
-        plt.hist(800/4095*(np.ndarray.flatten(det_ph[n][c])),
-                 np.arange(0,250),
-                 histtype ='step',label = f'{n}:{c}');
+        plt.hist(800/(4095*16)*(np.ndarray.flatten(det_ph[n][c])),
+                 np.arange(0,500,5),
+                 histtype ='step',label = f'{n}:{c}',
+                 linewidth=2.5,alpha=0.5
+                );
 plt.xlabel('Peak height / mV')
 plt.legend()
 # plt.yscale('log')
 plt.title(f'run {RUN_NUM} \n Peak Height')
 tabs.append(('Peak Height',p_height))
+
 
 p_hits_per_shot_corr = plt.figure()
 for i,n in enumerate(['u','v','w']):
@@ -283,6 +207,7 @@ for i,n in enumerate(['u','v','w']):
 plt.suptitle(f'Run {RUN_NUM} \n Hits-per-shot correlation')
 plt.tight_layout()
 tabs.append(('hits-per-shot correlation',p_hits_per_shot_corr))
+
 
 
 v_ts = []
@@ -317,6 +242,8 @@ for n in ['u','v','w']:
                     det_td[n].append(q1_i-q2_i)
     
 
+
+
 p_time_sums = plt.figure()
 
 ts_edges = np.arange(-100,100,0.25)
@@ -341,7 +268,8 @@ p_time_diff = plt.figure()
 for n in ['u','v','w']:
     plt.hist(0.168*np.array(det_td[n]),
              np.arange(-250,250,1),
-             histtype='step',label = n);
+             histtype='step',label = n,
+            linewidth=1.5);
 plt.xlabel('Time Differences / ns')
 plt.legend()
 
