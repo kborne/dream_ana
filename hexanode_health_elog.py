@@ -176,20 +176,44 @@ tabs.append(('timing',p_timing))
 
 
 
-p_height = plt.figure()
+p_height,ax = plt.subplots()
 for n,cn in det_name.items():
     for c in range(cn+1):
-        plt.hist(800/(4095*16)*(np.ndarray.flatten(det_ph[n][c])),
-                 np.arange(0,500,5),
+        ax.hist((np.ndarray.flatten(det_ph[n][c]-0*baselines[n][c])),
+                 np.arange(0,2**16,16*5),
                  histtype ='step',label = f'{n}:{c}',
                  linewidth=2.5,alpha=0.5
                 );
-plt.xlabel('Peak height / mV')
+
+ymin, ymax = ax.get_ylim()
+plt.vlines(x = baselines[n][c],ymin=0,ymax=ymax,linestyle='--',color = 'r')
+
+plt.vlines(x = baselines[n][c]-1000,ymin=0,ymax=ymax,linestyle='--',color = 'r')
+plt.vlines(x = baselines[n][c]+1000,ymin=0,ymax=ymax,linestyle='--',color = 'r')
+
+plt.xlabel('Peak height / FEX ADU')
 plt.legend()
 # plt.yscale('log')
 plt.title(f'run {RUN_NUM} \n Peak Height')
 tabs.append(('Peak Height',p_height))
 
+
+
+p_height_mv,ax = plt.subplots()
+for n,cn in det_name.items():
+    for c in range(cn+1):
+        ax.hist(-(800/2048)/16*(np.ndarray.flatten(det_ph[n][c]-baselines[n][c])),
+                 np.arange(0,1_600,10),
+                 histtype ='step',label = f'{n}:{c}',
+                 linewidth=2.5,alpha=0.5
+                );
+
+
+plt.xlabel('Peak height / mV')
+plt.legend()
+# plt.yscale('log')
+plt.title(f'run {RUN_NUM} \n Peak Height')
+tabs.append(('Peak Height (mV)',p_height_mv))
 
 p_hits_per_shot_corr = plt.figure()
 for i,n in enumerate(['u','v','w']):
